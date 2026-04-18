@@ -1,0 +1,394 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Oqanoon — مساعدك القانوني العُماني</title>
+<style>
+  :root {
+    --bg: #0f1923;
+    --card: #1a2733;
+    --border: #2a3a4a;
+    --text: #e8e8e8;
+    --muted: #8899aa;
+    --accent: #c9a227;
+    --accent-dim: rgba(201,162,39,0.15);
+    --green: #4caf50;
+    --orange: #ff9800;
+    --red: #f44336;
+  }
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body {
+    font-family: 'Segoe UI', Tahoma, Arial, sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+  }
+
+  /* Header */
+  header {
+    text-align: center;
+    padding: 40px 20px 20px;
+  }
+  header h1 {
+    font-size: 2.4rem;
+    color: var(--accent);
+    margin-bottom: 8px;
+    letter-spacing: 1px;
+  }
+  header p {
+    color: var(--muted);
+    font-size: 1.05rem;
+  }
+
+  /* Main */
+  main {
+    flex: 1;
+    max-width: 800px;
+    width: 100%;
+    margin: 0 auto;
+    padding: 20px;
+  }
+
+  /* Search */
+  .search-box {
+    position: relative;
+    margin-bottom: 16px;
+  }
+  .search-box textarea {
+    width: 100%;
+    padding: 16px 60px 16px 16px;
+    font-size: 1.1rem;
+    font-family: inherit;
+    background: var(--card);
+    color: var(--text);
+    border: 2px solid var(--border);
+    border-radius: 12px;
+    resize: none;
+    outline: none;
+    direction: rtl;
+    min-height: 60px;
+    transition: border-color 0.2s;
+  }
+  .search-box textarea:focus {
+    border-color: var(--accent);
+  }
+  .search-box textarea::placeholder {
+    color: var(--muted);
+  }
+  .search-box button {
+    position: absolute;
+    left: 12px;
+    top: 50%;
+    transform: translateY(-50%);
+    width: 42px;
+    height: 42px;
+    border-radius: 50%;
+    border: none;
+    background: var(--accent);
+    color: var(--bg);
+    font-size: 1.3rem;
+    cursor: pointer;
+    transition: opacity 0.2s;
+  }
+  .search-box button:disabled {
+    opacity: 0.4;
+    cursor: not-allowed;
+  }
+  .char-count {
+    text-align: left;
+    font-size: 0.8rem;
+    color: var(--muted);
+    margin-top: -10px;
+    margin-bottom: 12px;
+  }
+
+  /* Examples */
+  .examples {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    margin-bottom: 24px;
+    justify-content: center;
+  }
+  .examples button {
+    background: var(--accent-dim);
+    border: 1px solid var(--border);
+    color: var(--accent);
+    padding: 8px 14px;
+    border-radius: 20px;
+    font-size: 0.85rem;
+    cursor: pointer;
+    font-family: inherit;
+    transition: background 0.2s;
+  }
+  .examples button:hover {
+    background: rgba(201,162,39,0.25);
+  }
+
+  /* Loading */
+  .loading {
+    text-align: center;
+    padding: 40px 0;
+    display: none;
+  }
+  .loading.active { display: block; }
+  .spinner {
+    width: 36px;
+    height: 36px;
+    border: 3px solid var(--border);
+    border-top-color: var(--accent);
+    border-radius: 50%;
+    animation: spin 0.8s linear infinite;
+    margin: 0 auto 12px;
+  }
+  @keyframes spin { to { transform: rotate(360deg); } }
+  .loading p { color: var(--muted); font-size: 0.95rem; }
+
+  /* Result */
+  .result {
+    display: none;
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 24px;
+    margin-bottom: 20px;
+    line-height: 1.8;
+    animation: fadeIn 0.3s;
+  }
+  .result.active { display: block; }
+  @keyframes fadeIn { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: none; } }
+
+  .result h3 { color: var(--accent); margin-bottom: 12px; font-size: 1.1rem; }
+  .result .answer { white-space: pre-wrap; margin-bottom: 16px; }
+
+  .confidence {
+    display: inline-block;
+    padding: 4px 12px;
+    border-radius: 6px;
+    font-size: 0.85rem;
+    font-weight: 600;
+    margin-bottom: 12px;
+  }
+  .confidence.high { background: rgba(76,175,80,0.15); color: var(--green); }
+  .confidence.medium { background: rgba(255,152,0,0.15); color: var(--orange); }
+  .confidence.low { background: rgba(244,67,54,0.15); color: var(--red); }
+
+  .disclaimer {
+    color: var(--muted);
+    font-size: 0.85rem;
+    border-top: 1px solid var(--border);
+    padding-top: 12px;
+    margin-top: 12px;
+  }
+
+  .sources { margin-top: 12px; }
+  .sources h4 { color: var(--muted); font-size: 0.9rem; margin-bottom: 6px; }
+  .sources a {
+    color: var(--accent);
+    text-decoration: none;
+    display: block;
+    font-size: 0.9rem;
+    margin-bottom: 4px;
+  }
+  .sources a:hover { text-decoration: underline; }
+
+  .error-msg {
+    display: none;
+    background: rgba(244,67,54,0.1);
+    border: 1px solid var(--red);
+    border-radius: 8px;
+    padding: 14px;
+    color: var(--red);
+    text-align: center;
+    margin-bottom: 16px;
+  }
+  .error-msg.active { display: block; }
+
+  /* History */
+  .history {
+    margin-top: 16px;
+    border-top: 1px solid var(--border);
+    padding-top: 12px;
+  }
+  .history-item {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 12px;
+    margin-bottom: 8px;
+    cursor: pointer;
+    transition: border-color 0.2s;
+  }
+  .history-item:hover { border-color: var(--accent); }
+  .history-item .q { color: var(--accent); font-size: 0.9rem; margin-bottom: 4px; }
+  .history-item .a { color: var(--muted); font-size: 0.8rem; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+
+  /* Footer */
+  footer {
+    text-align: center;
+    padding: 20px;
+    color: var(--muted);
+    font-size: 0.8rem;
+    border-top: 1px solid var(--border);
+  }
+  footer a { color: var(--accent); text-decoration: none; }
+</style>
+</head>
+<body>
+
+<header>
+  <h1>Oqanoon</h1>
+  <p>مساعدك القانوني العُماني — اسأل أي سؤال عن القانون العُماني</p>
+</header>
+
+<main>
+  <div class="search-box">
+    <textarea id="question" placeholder="اكتب سؤالك القانوني هنا..." rows="2" maxlength="500"></textarea>
+    <button id="askBtn" onclick="ask()">&#9658;</button>
+  </div>
+  <div class="char-count"><span id="charCount">0</span>/500</div>
+
+  <div class="examples">
+    <button onclick="setQ(this)">كم يوم إجازة سنوية يستحق الموظف؟</button>
+    <button onclick="setQ(this)">ما شروط تأسيس شركة في عمان؟</button>
+    <button onclick="setQ(this)">ما حقوق المستأجر عند انتهاء العقد؟</button>
+    <button onclick="setQ(this)">ما عقوبة التزوير في القانون العماني؟</button>
+  </div>
+
+  <div class="error-msg" id="error"></div>
+  <div class="loading" id="loading">
+    <div class="spinner"></div>
+    <p>جاري البحث في النصوص القانونية...</p>
+  </div>
+
+  <div class="result" id="result">
+    <h3>&#9878; الإجابة</h3>
+    <div class="answer" id="answer"></div>
+    <div id="confidenceWrap"></div>
+    <div class="sources" id="sourcesWrap"></div>
+    <div class="disclaimer">&#9888; هذه معلومة قانونية وليست استشارة قانونية. للحالات المعقدة راجع محامي مختص.</div>
+  </div>
+
+  <div class="history" id="historyWrap" style="display:none">
+    <h4 style="color:var(--muted);margin-bottom:8px;">الأسئلة السابقة</h4>
+    <div id="historyList"></div>
+  </div>
+</main>
+
+<footer>
+  مبني على النصوص القانونية من <a href="https://qanoon.om" target="_blank">qanoon.om</a>
+  &nbsp;|&nbsp; <a href="https://github.com/julanom/oqanoon" target="_blank">GitHub</a>
+</footer>
+
+<script>
+const questionEl = document.getElementById('question');
+const askBtn = document.getElementById('askBtn');
+const loadingEl = document.getElementById('loading');
+const resultEl = document.getElementById('result');
+const answerEl = document.getElementById('answer');
+const errorEl = document.getElementById('error');
+const charCountEl = document.getElementById('charCount');
+const confidenceWrap = document.getElementById('confidenceWrap');
+const sourcesWrap = document.getElementById('sourcesWrap');
+const historyWrap = document.getElementById('historyWrap');
+const historyList = document.getElementById('historyList');
+
+const CONFIDENCE_AR = { high: 'عالي', medium: 'متوسط', low: 'منخفض' };
+let history = [];
+let pastQuestions = [];
+
+questionEl.addEventListener('input', () => {
+  charCountEl.textContent = questionEl.value.length;
+});
+questionEl.addEventListener('keydown', (e) => {
+  if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); ask(); }
+});
+
+function setQ(btn) {
+  questionEl.value = btn.textContent;
+  charCountEl.textContent = btn.textContent.length;
+  ask();
+}
+
+function showError(msg) {
+  errorEl.textContent = msg;
+  errorEl.classList.add('active');
+  setTimeout(() => errorEl.classList.remove('active'), 5000);
+}
+
+function renderHistory() {
+  if (!pastQuestions.length) { historyWrap.style.display = 'none'; return; }
+  historyWrap.style.display = 'block';
+  historyList.innerHTML = pastQuestions.slice().reverse().map(pq =>
+    `<div class="history-item" onclick="setQ({textContent:'${pq.q.replace(/'/g,"\\'")}'})">`+
+    `<div class="q">${pq.q}</div>`+
+    `<div class="a">${pq.a.slice(0, 120)}...</div></div>`
+  ).join('');
+}
+
+async function ask() {
+  const q = questionEl.value.trim();
+  if (!q) return;
+  if (q.length > 500) { showError('السؤال طويل جداً (الحد 500 حرف)'); return; }
+
+  askBtn.disabled = true;
+  loadingEl.classList.add('active');
+  resultEl.classList.remove('active');
+  errorEl.classList.remove('active');
+
+  try {
+    const res = await fetch('/api/ask', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ question: q, history })
+    });
+    const data = await res.json();
+
+    if (!res.ok) {
+      showError(data.error || 'حدث خطأ');
+      return;
+    }
+
+    answerEl.textContent = data.answer;
+
+    const conf = data.confidence || 'medium';
+    confidenceWrap.innerHTML = `<span class="confidence ${conf}">${CONFIDENCE_AR[conf] || conf}</span>`;
+
+    if (data.sources && data.sources.length) {
+      const seen = new Set();
+      const unique = data.sources.filter(s => {
+        const k = s.law_id || s.title;
+        if (seen.has(k)) return false;
+        seen.add(k); return s.title && s.url;
+      }).slice(0, 3);
+      sourcesWrap.innerHTML = '<h4>المصادر</h4>' +
+        unique.map(s => `<a href="${s.url}" target="_blank">${s.title}</a>`).join('');
+    } else {
+      sourcesWrap.innerHTML = '';
+    }
+
+    resultEl.classList.add('active');
+
+    history.push({ role: 'user', content: q });
+    history.push({ role: 'assistant', content: data.answer });
+    if (history.length > 6) history.splice(0, history.length - 6);
+
+    pastQuestions.push({ q, a: data.answer });
+    if (pastQuestions.length > 10) pastQuestions.shift();
+    renderHistory();
+
+    questionEl.value = '';
+    charCountEl.textContent = '0';
+  } catch (err) {
+    showError('خطأ في الاتصال — حاول مرة أخرى');
+  } finally {
+    askBtn.disabled = false;
+    loadingEl.classList.remove('active');
+  }
+}
+</script>
+</body>
+</html>
