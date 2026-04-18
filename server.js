@@ -1,3 +1,4 @@
+require('./config');
 const express = require('express');
 const path = require('path');
 const { queryLaw } = require('./query_law_improved');
@@ -32,7 +33,7 @@ app.post('/api/ask', async (req, res) => {
 
   const wait = checkRate(req.ip);
   if (wait > 0) {
-    return res.status(429).json({ error: `rate limited — wait ${wait}s`, retryAfter: wait });
+    return res.status(429).json({ error: `rate limited - wait ${wait}s`, retryAfter: wait });
   }
 
   try {
