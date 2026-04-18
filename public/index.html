@@ -322,11 +322,29 @@ function showError(msg) {
 function renderHistory() {
   if (!pastQuestions.length) { historyWrap.style.display = 'none'; return; }
   historyWrap.style.display = 'block';
-  historyList.innerHTML = pastQuestions.slice().reverse().map(pq =>
-    `<div class="history-item" onclick="setQ({textContent:'${pq.q.replace(/'/g,"\\'")}'})">`+
-    `<div class="q">${pq.q}</div>`+
-    `<div class="a">${pq.a.slice(0, 120)}...</div></div>`
-  ).join('');
+  historyList.innerHTML = '';
+
+  for (const pq of pastQuestions.slice().reverse()) {
+    const item = document.createElement('div');
+    item.className = 'history-item';
+    item.addEventListener('click', () => {
+      questionEl.value = pq.q;
+      charCountEl.textContent = String(pq.q.length);
+      ask();
+    });
+
+    const q = document.createElement('div');
+    q.className = 'q';
+    q.textContent = pq.q;
+
+    const a = document.createElement('div');
+    a.className = 'a';
+    a.textContent = `${pq.a.slice(0, 120)}...`;
+
+    item.appendChild(q);
+    item.appendChild(a);
+    historyList.appendChild(item);
+  }
 }
 
 async function ask() {
@@ -353,6 +371,12 @@ async function ask() {
     }
 
     answerEl.textContent = data.answer;
+
+    const isClarification = !!data.needs_clarification;
+    resultEl.querySelector('h3').innerHTML = isClarification ? '&#9878; توضيح مطلوب' : '&#9878; الإجابة';
+    resultEl.querySelector('.disclaimer').textContent = isClarification
+      ? '⚠ أحتاج تفاصيل إضافية حتى أقدم إجابة قانونية أدق.'
+      : '⚠ هذه معلومة قانونية وليست استشارة قانونية. للحالات المعقدة راجع محامي مختص.';
 
     const conf = data.confidence || 'medium';
     confidenceWrap.innerHTML = `<span class="confidence ${conf}">${CONFIDENCE_AR[conf] || conf}</span>`;

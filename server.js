@@ -42,7 +42,8 @@ app.post('/api/ask', async (req, res) => {
       answer: result.answer,
       confidence: result.confidence,
       sources: result.sources,
-      topic: result.analysis?.topic
+      topic: result.analysis?.topic,
+      needs_clarification: !!result.needs_clarification
     });
   } catch (err) {
     console.error('[api/ask]', err);
