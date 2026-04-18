@@ -20,8 +20,24 @@ test('analyzeQuestion extracts topic and article references', () => {
   assert.deepEqual(analysis.lawNumbers, ['3/2024']);
 });
 
+test('analyzeQuestion recognizes personal status topics', () => {
+  const custody = analyzeQuestion('ماذا يقول القانون عن الحضانة');
+  const divorce = analyzeQuestion('ماذا يقول القانون عن الطلاق');
+  const waitingPeriod = analyzeQuestion('ماذا يقول القانون عن عدة المطلقة');
+
+  assert.equal(custody.topic, 'أحوال شخصية');
+  assert.equal(divorce.topic, 'أحوال شخصية');
+  assert.equal(waitingPeriod.topic, 'أحوال شخصية');
+});
+
+test('analyzeQuestion removes generic filler terms from keyTerms', () => {
+  const analysis = analyzeQuestion('اعني ماذا يقول القانون عن الطلاق');
+  assert.deepEqual(analysis.keyTerms, ['الطلاق']);
+});
+
 test('topicTitleKeywords maps topic to search hints', () => {
   assert.deepEqual(topicTitleKeywords('إيجار'), ['إيجار', 'مستأجر', 'مالك']);
+  assert.deepEqual(topicTitleKeywords('أحوال شخصية'), ['أحوال شخصية', 'حضانة', 'طلاق', 'نفقة', 'زواج', 'ميراث']);
 });
 
 test('extractArticleNumbers supports article references in Arabic text', () => {
