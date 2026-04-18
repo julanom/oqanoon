@@ -1,4 +1,16 @@
 {
+  "name": "oqanoon",
+  "version": "1.0.0",
+  "description": "Arabic-language Discord bot for Omani law — answers legal questions by searching official texts from qanoon.om",
+  "main": "discord_law_bot.js",
+  "scripts": {
+    "start": "node discord_law_bot.js",
+    "scrape": "node scripts/qanoon_full_scraper.js",
+    "chunk": "node scripts/qanoon_chunking.js",
+    "validate": "node scripts/qanoon_cleanup_validate.js",
+    "prepare": "node scripts/qanoon_prepare_jsonl.js",
+    "upload": "node scripts/voyage_supabase_full_upload.js"
+  },
   "dependencies": {
     "axios": "^1.13.6",
     "cheerio": "^1.2.0",
